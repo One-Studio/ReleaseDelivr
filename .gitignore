@@ -1,0 +1,5 @@
+# 排除的文件
+
+.DS_STORE
+.idea
+/release/
