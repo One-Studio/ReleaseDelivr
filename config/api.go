@@ -2,23 +2,48 @@ package config
 
 import (
 	"encoding/json"
-	util "github.com/One-Studio/ReleaseDelivr/util"
 	"os"
+
+	"github.com/One-Studio/ReleaseDelivr/util"
 )
 
 type Api struct {
-	Version string
-	ReleaseTime string
-	CheckTime string
+	Version      string
+	ReleaseTime  string
+	CheckTime    string
 	DownloadLink []string
-	Split bool
-	Format int8
-	ReleaseNote string
+	Split        bool
+	Format       int8
+	ReleaseNote  string
+}
+
+var defApi = Api{
+	Version:      "",
+	ReleaseTime:  "",
+	CheckTime:    "",
+	DownloadLink: []string{},
+	Split:        false,
+	Format:       1,
+	ReleaseNote:  "",
+}
+
+func writeJsonApi(path string, Api Api) error {
+	JsonData, err := json.MarshalIndent(Api, "", "  ") //第二个参数要地址传递
+	if err != nil {
+		return err
+	}
+
+	err = util.WriteFast(path, string(JsonData))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ReadApi(path string) (Api, error) {
 	//检查文件是否存在
-	if exist, err := util.IsFileExisted(path) ;err != nil {
+	if exist, err := util.IsFileExisted(path); err != nil {
 		return Api{}, err
 	} else if exist == true {
 		//存在则读取文件
@@ -26,7 +51,6 @@ func ReadApi(path string) (Api, error) {
 		if err != nil {
 			return Api{}, err
 		}
-
 		//初始化实例并解析JSON
 		var ApiInst Api
 		err = json.Unmarshal([]byte(content), &ApiInst) //第二个参数要地址传递
@@ -37,12 +61,18 @@ func ReadApi(path string) (Api, error) {
 
 		return ApiInst, nil
 	} else {
-
+		//不存在则生成默认文件以供修改
+		if _, err = os.Create(path); err != nil {
+			return Api{}, err
+		}
+		if err := writeJsonApi(path, defApi); err != nil {
+			return Api{}, nil
+		}
 		return Api{}, nil
 	}
 }
 
-func WriteApi(path string, config Api) error {
+func WriteApi(path string, Api Api) error {
 	//检查文件是否存在
 	exist, err := util.IsFileExisted(path)
 	if err != nil {
@@ -58,16 +88,10 @@ func WriteApi(path string, config Api) error {
 				return err
 			}
 		}
-		//TODO: 保存使用具体的Api变量
-		JsonData, err := json.Marshal(config) //第二个参数要地址传递
-		if err != nil {
-			return err
-		}
+	}
 
-		err = util.WriteFast(path, string(JsonData))
-		if err != nil {
-			return err
-		}
+	if err := writeJsonApi(path, Api); err != nil {
+		return err
 	}
 
 	return nil

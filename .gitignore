@@ -2,4 +2,6 @@
 
 .DS_STORE
 .idea
-/release/
+/dist/Linux64
+/dist/Win64
+/dist/Mac64

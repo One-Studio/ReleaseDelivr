@@ -1,0 +1,20 @@
+on:
+    release:
+      types: [published]
+
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Dispatch to activate archieve
+          uses: mvasigh/dispatch-action@1.1.6
+          with:    # The Github access token to use (i.e. secrets.GITHUB_TOKEN)
+            # 在目标仓库设置里设置Secret，起名'ARCHIVE_TOKEN'，填入GitHub账号的Personal Access Token，权限给到repo即可
+            token: ${{ secrets.ARCHIVE_TOKEN }}
+            # 搬运仓库名 ！请替换
+            repo: ArchiverRepo
+            # 搬运仓库主 ！请替换
+            owner: ArchiverOwner
+            # The type of event to be dispatched
+            event_type: do_archive

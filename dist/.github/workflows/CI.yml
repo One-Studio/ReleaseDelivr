@@ -1,0 +1,65 @@
+name: release CI
+
+on:
+  schedule:
+    - cron:  '30 * * * *'
+      # 每30分钟：'30 * * * *'
+      # 每1小时：'* 1 * * *'
+      # ！最少5分钟
+
+jobs:
+  transport:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # 运行工具
+      - name: Run ReleaseDelivr
+        run: |
+          ls
+          chmod 777 ReleaseDelivr
+          ./ReleaseDelivr
+          ls
+
+      - name: push
+        uses: github-actions-x/commit@v2.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          push-branch: master
+          commit-message: 'Automatically pushed by GitHub Actions'
+          rebase: 'true' # pull abd rebase before commit
+          force-add: 'true'
+          # ！请替换
+          name: xxx
+          email: xxx@qq.com
+
+      # 等待10s 以防先发布再push
+      - name: Sleep for 15 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '10s'
+
+      # 读取更新后的版本信息
+      - name: Read version
+        id: version
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./version
+
+      # 读取下载地址
+      - name: Read DownloadLink
+          id: downloadlink
+          uses: juliangruber/read-file-action@v1
+          with:
+            path: ./download_link
+
+      # 运行工具
+      - name: Github Release create, update, and upload assets
+        uses: meeDamian/github-release@v2.0.3
+        env:
+          TAG: ${{ steps.version.outputs.content }}
+        with:
+          token:  ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.version.outputs.content }}
+          name: ${{ steps.version.outputs.content }}
+          body: 下载链接：\n${{ steps.downloadlink.outputs.content }}
