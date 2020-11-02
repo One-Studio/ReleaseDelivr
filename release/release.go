@@ -83,6 +83,7 @@ func DownloadAssets(assets []Asset, cfg config.Cfg) ([]string, error) {
 	return files, nil
 }
 
+//检查当前文件夹的大小是否小于 ~MB
 func checkDirSize(MB int64) error {
 	var filesize int64
 	err := filepath.Walk(".",
@@ -102,6 +103,7 @@ func checkDirSize(MB int64) error {
 	}
 }
 
+//自动分割超过20MB的文件，可以根据DeleteFilter适当删除文件
 func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 	//先检查当前目录下所有文件大小之和是否小于50MB
 	if err := checkDirSize(50); err != nil {
@@ -212,7 +214,30 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 		}
 	}
 
+	//再检查当前目录下所有文件大小之和是否小于50MB
+	if err := checkDirSize(50); err != nil {
+		return nil, err
+	}
+
 	return split, nil
+}
+
+//把文件名转换成最终加速下载的链接
+func File2Link(files []string, cfg config.Cfg) []string {
+	var links []string
+	if cfg.TargetGH == true {
+		prefix := "https://cdn.jsdelivr.net/gh/" + cfg.ArchiverOwner + "/" + cfg.ArchiverRepo + "/" + cfg.DistPath + "/"
+		for _, file := range files {
+			links = append(links, prefix+file)
+		}
+	} else {
+		prefix := cfg.ArchiverAPI + "/" + cfg.DistPath + "/"
+		for _, file := range files {
+			links = append(links, prefix+file)
+		}
+	}
+
+	return links
 }
 
 func UpdateVersionList(oldList []string, newVersion string) []string {

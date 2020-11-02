@@ -108,12 +108,12 @@ func main() {
 			_, fileName := path.Split(dCfg.TargetDLink)
 			files = append(files, fileName)
 		}
-		//TODO 处理自动分割压缩文件
 		//处理总文件大小，单个文件大小，进行自动分卷，并且引入精简filter
 		files, err = release.AutoSplit(files, dCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
+		dApi.DownloadLink = release.File2Link(files, dCfg)
 	} else if res == 0 {
 		fmt.Println("当前版本即是最新版本，无需更新")
 		os.Exit(0)
