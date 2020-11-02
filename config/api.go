@@ -9,20 +9,20 @@ import (
 
 type Api struct {
 	Version      string
+	VersionList  []string
 	ReleaseTime  string
 	CheckTime    string
 	DownloadLink []string
-	Split        bool
 	Format       int8
 	ReleaseNote  string
 }
 
 var defApi = Api{
 	Version:      "",
+	VersionList:  []string{},
 	ReleaseTime:  "",
 	CheckTime:    "",
 	DownloadLink: []string{},
-	Split:        false,
 	Format:       1,
 	ReleaseNote:  "",
 }

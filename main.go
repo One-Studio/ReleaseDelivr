@@ -15,13 +15,15 @@ import (
 )
 
 func main() {
-	configPath, apiPath := "./config.json", "./api.json"
 
-	//err := util.WriteFast("api.json", "hello world")
-	//if err != nil {
-	//	fmt.Println(err, "这都能出错")
-	//	os.Exit(0)
+	//if err := p7zip.Do7z("ReleaseDelivr", "x.7z", 3, true, "1m"); err != nil {
+	//	log.Fatal(err)
 	//}
+	//if err := p7zip.Un7z("x.7z", "temp"); err != nil {
+	//	log.Fatal(err)
+	//}
+
+	configPath, apiPath := "./config.json", "./api.json"
 
 	//读取程序设置
 	dCfg, err := config.ReadConfig(configPath)
@@ -82,50 +84,33 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		//更新设置信息和下载更新文件
+		var files []string
 		if dCfg.TargetGH == true {
 			//对于GitHub项目
-			dApi.DownloadLink, err = release.DownloadAssets(target.Assets, dCfg)
+			files, err = release.DownloadAssets(target.Assets, dCfg)
 			if err != nil {
 				log.Fatal(err)
 			}
 			//更新信息
-			//字符串类型转time
-			//s4 := "1999年10月19日" //字符串
-			//t4, err := time.Parse("2006年01月02日", s4)	//"2006-01-02T15:04Z"
-			dCfg.Version = target.TagName
-			dCfg.Checktime = time.Now().Format("2006-01-02T15:04Z")
-			dApi.Version = target.TagName
-			dApi.CheckTime = dCfg.Checktime
 			dApi.ReleaseTime = target.PublishAt
 			dApi.ReleaseNote = target.ReleaseNote
-			dApi.Format = dCfg.Format
-			dApi.Split = dCfg.Split
 		} else {
 			//对于非GitHub网站API，直接用DLink下载
 			err = util.DownloadFile(dCfg.TargetDLink, "./"+dCfg.DistPath)
 			if err != nil {
 				log.Fatal(err)
 			}
-			//更新信息
-			dCfg.Version = target.TagName
-			dCfg.Checktime = time.Now().Format("2006-01-02T15:04Z")
-			dApi.Version = target.TagName
-			dApi.CheckTime = dCfg.Checktime
-			dApi.Format = dCfg.Format
-			dApi.Split = dCfg.Split
-			//更新归档后下载链接
+			//更新归档后的所有文件名
 			_, fileName := path.Split(dCfg.TargetDLink)
-			var link string
-			if dCfg.ArchiverGH == true {
-				link = "https://cdn.jsdelivr.net/gh/" + dCfg.ArchiverOwner + "/" + dCfg.ArchiverRepo + "/" + dCfg.DistPath + "/" + fileName
-			} else {
-				link = dCfg.ArchiverAPI + "/" + dCfg.DistPath + "/" + fileName
-			}
-			dApi.DownloadLink = []string{link}
-			//非GitHub网站无法得知更新时间和更新日志
-			//dApi.ReleaseTime = target.PublishAt
-			//dApi.ReleaseNote = target.ReleaseNote
+			files = append(files, fileName)
+		}
+		//TODO 处理自动分割压缩文件
+		//处理总文件大小，单个文件大小，进行自动分卷，并且引入精简filter
+		files, err = release.AutoSplit(files)
+		if err != nil {
+			log.Fatal(err)
 		}
 	} else if res == 0 {
 		fmt.Println("当前版本即是最新版本，无需更新")
@@ -133,6 +118,19 @@ func main() {
 	} else {
 		log.Fatal("出现错误，当前版本>最新版本")
 	}
+
+	//更新信息
+	dCfg.Version = target.TagName
+	dCfg.VersionList = release.UpdateVersionList(dCfg.VersionList, target.TagName)
+	dCfg.Checktime = time.Now().Format("2006-01-02T15:04Z")
+	dApi.Version = target.TagName
+	dApi.VersionList = release.UpdateVersionList(dApi.VersionList, target.TagName)
+	dApi.CheckTime = dCfg.Checktime
+	dApi.Format = dCfg.Format
+
+	//字符串类型转time
+	//s4 := "1999年10月19日" //字符串
+	//t4, err := time.Parse("2006年01月02日", s4)	//"2006-01-02T15:04Z"
 
 	//保存程序设置和API文件
 	if err = config.WriteConfig(configPath, dCfg); err != nil {

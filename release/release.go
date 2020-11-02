@@ -27,7 +27,7 @@ type Latest struct {
 	Message     string  `json:"message"`
 	Assets      []Asset `json:"assets"`
 	PublishAt   string  `json:"published_at"` //格式 2020-10-20T12:16:01Z T/Z分割 -/:分割
-	ReleaseNote string  `json:"note"`
+	ReleaseNote string  `json:"body"`
 }
 
 //获取并提取GitHub Release的最近一次给Latest类型变量
@@ -54,9 +54,10 @@ func ParseReleaseInfo(owner string, repo string) (Latest, error) {
 	return latestInst, nil
 }
 
+//下载附件，返回所有的文件名
 func DownloadAssets(assets []Asset, cfg config.Cfg) ([]string, error) {
 	//必过滤"content_type": "application/octet-stream"
-	var links []string
+	var files []string
 	for _, ast := range assets {
 		if ast.ContentType == "application/octet-stream" {
 			continue
@@ -69,15 +70,21 @@ func DownloadAssets(assets []Asset, cfg config.Cfg) ([]string, error) {
 				}
 				_, fileName := path.Split(ast.BrowserDownloadURL)
 
-				if cfg.ArchiverGH == true {
-					links = append(links, "https://cdn.jsdelivr.net/gh/"+cfg.ArchiverOwner+"/"+cfg.ArchiverRepo+"/"+cfg.DistPath+"/"+fileName)
-				} else {
-					links = append(links, cfg.ArchiverAPI+"/"+cfg.DistPath+"/"+fileName)
-				}
+				files = append(files, fileName)
 				break
 			}
 		}
 	}
 
-	return links, nil
+	return files, nil
+}
+
+//先检查当前目录下所有文件大小之和是否超过
+func AutoSplit(files []string) ([]string, error) {
+
+	return nil, nil
+}
+
+func UpdateVersionList(oldList []string, newVersion string) []string {
+	return append([]string{newVersion}, oldList...)
 }

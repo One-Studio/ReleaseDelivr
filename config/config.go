@@ -19,10 +19,10 @@ type Cfg struct {
 	ArchiverAPI     string   //归档非GH所用API（链接前缀）
 	ArchiverVersion string   //归档工具的版本号
 	Version         string   //当前搬运的版本
+	VersionList     []string //历史可用版本
 	Checktime       string   //最近一次检查的时间
 	Format          int8     //压缩格式
 	CompRatio       int8     //压缩率
-	Split           bool     //是否分卷
 	DistPath        string   //归档文件夹
 	Filter          []string //更新附件过滤字符串
 }
@@ -37,17 +37,14 @@ var defCfg = Cfg{
 	ArchiverRepo:    "",
 	ArchiverGH:      true,
 	ArchiverAPI:     "",
-	ArchiverVersion: "v0.1.0",
+	ArchiverVersion: "v0.2.0 alpha",
 	Version:         "",
+	VersionList:     []string{},
 	Checktime:       "",
 	Format:          1,
 	CompRatio:       2,
-	Split:           false,
 	DistPath:        "dist",
-	Filter: []string{
-		".zip",
-		".exe",
-	},
+	Filter:          []string{".zip", ".exe"},
 }
 
 //过滤一下设置文件的参数
