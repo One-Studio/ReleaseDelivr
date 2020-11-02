@@ -16,16 +16,18 @@ import (
 
 func main() {
 
+	//_,_ = release.AutoSplit([]string{}, dCfg.DistPath)
+	//return
 	//if err := p7zip.Do7z("ReleaseDelivr", "x.7z", 3, true, "1m"); err != nil {
 	//	log.Fatal(err)
 	//}
 	//if err := p7zip.Un7z("x.7z", "temp"); err != nil {
 	//	log.Fatal(err)
 	//}
+	//读取程序设置
 
 	configPath, apiPath := "./config.json", "./api.json"
 
-	//读取程序设置
 	dCfg, err := config.ReadConfig(configPath)
 	if err != nil {
 		log.Fatal(err)
@@ -108,7 +110,7 @@ func main() {
 		}
 		//TODO 处理自动分割压缩文件
 		//处理总文件大小，单个文件大小，进行自动分卷，并且引入精简filter
-		files, err = release.AutoSplit(files)
+		files, err = release.AutoSplit(files, dCfg)
 		if err != nil {
 			log.Fatal(err)
 		}

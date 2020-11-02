@@ -7,24 +7,30 @@ import (
 	"github.com/One-Studio/ReleaseDelivr/util"
 )
 
+type DFilter struct {
+	Index string   //包含该字符串的会被处理
+	List  []string //要删除的文件列表
+}
+
 type Cfg struct {
-	TargetOwner     string   //目标仓库主
-	TargetRepo      string   //目标仓库名
-	TargetGH        bool     //目标是否为GitHub仓库
-	TargetAPI       string   //目标非GH所用版本号API
-	TargetDLink     string   //目标非GH所用下载链接
-	ArchiverOwner   string   //归档仓库主
-	ArchiverRepo    string   //归档仓库名
-	ArchiverGH      bool     //归档是否为GitHub仓库
-	ArchiverAPI     string   //归档非GH所用API（链接前缀）
-	ArchiverVersion string   //归档工具的版本号
-	Version         string   //当前搬运的版本
-	VersionList     []string //历史可用版本
-	Checktime       string   //最近一次检查的时间
-	Format          int8     //压缩格式
-	CompRatio       int8     //压缩率
-	DistPath        string   //归档文件夹
-	Filter          []string //更新附件过滤字符串
+	TargetOwner     string    //目标仓库主
+	TargetRepo      string    //目标仓库名
+	TargetGH        bool      //目标是否为GitHub仓库
+	TargetAPI       string    //目标非GH所用版本号API
+	TargetDLink     string    //目标非GH所用下载链接
+	ArchiverOwner   string    //归档仓库主
+	ArchiverRepo    string    //归档仓库名
+	ArchiverGH      bool      //归档是否为GitHub仓库
+	ArchiverAPI     string    //归档非GH所用API（链接前缀）
+	ArchiverVersion string    //归档工具的版本号
+	Version         string    //当前搬运的版本
+	VersionList     []string  //历史可用版本
+	Checktime       string    //最近一次检查的时间
+	Format          int8      //压缩格式
+	CompRatio       int8      //压缩率
+	DistPath        string    //归档文件夹
+	Filter          []string  //更新附件过滤字符串
+	DeleteFilter    []DFilter //Delete过滤，单个文件大于20MB时检查，删除部分文件 from DFilter.List
 }
 
 var defCfg = Cfg{
@@ -37,7 +43,7 @@ var defCfg = Cfg{
 	ArchiverRepo:    "",
 	ArchiverGH:      true,
 	ArchiverAPI:     "",
-	ArchiverVersion: "v0.2.0 alpha",
+	ArchiverVersion: "v0.2.1",
 	Version:         "",
 	VersionList:     []string{},
 	Checktime:       "",
@@ -45,6 +51,9 @@ var defCfg = Cfg{
 	CompRatio:       2,
 	DistPath:        "dist",
 	Filter:          []string{".zip", ".exe"},
+	DeleteFilter: []DFilter{
+		{"", []string{""}},
+	},
 }
 
 //过滤一下设置文件的参数

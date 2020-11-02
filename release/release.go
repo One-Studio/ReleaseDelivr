@@ -3,7 +3,11 @@ package release
 import (
 	"encoding/json"
 	"errors"
+	"github.com/One-Studio/ReleaseDelivr/p7zip"
+	"os"
 	"path"
+	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/One-Studio/ReleaseDelivr/config"
@@ -79,10 +83,136 @@ func DownloadAssets(assets []Asset, cfg config.Cfg) ([]string, error) {
 	return files, nil
 }
 
-//先检查当前目录下所有文件大小之和是否超过
-func AutoSplit(files []string) ([]string, error) {
+func checkDirSize(MB int64) error {
+	var filesize int64
+	err := filepath.Walk(".",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			filesize += info.Size()
+			return nil
+		})
+	if err != nil {
+		return err
+	} else if filesize/1024/1024 >= MB {
+		return errors.New("total file size is above " + strconv.FormatInt(MB, 10) + "MB and JsDelivr won't work")
+	} else {
+		return nil
+	}
+}
 
-	return nil, nil
+func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
+	//先检查当前目录下所有文件大小之和是否小于50MB
+	if err := checkDirSize(50); err != nil {
+		return nil, err
+	}
+
+	//再检查所有files，如果有delete过滤的就删除对应文件，如果有超过20MB的就分卷压缩
+	var split []string
+	for _, file := range files {
+		f, err := os.Stat("./" + cfg.DistPath + "/" + file)
+		if err != nil {
+			return nil, err
+		} else if f.Size()/1024/1024 >= 20 {
+			//分卷操作
+			ext := path.Ext(file)
+			filename := strings.TrimSuffix(file, ext)
+			//检查文件的格式是不是7z支持的
+			ok := 0
+			for _, suffix := range p7zip.Support {
+				if strings.ToLower(ext) == strings.ToLower(suffix) {
+					ok++
+					break
+				}
+			}
+			//非7z支持的文件格式则对path做特殊处理，不解压
+			if ok == 0 {
+				if err := os.Rename(cfg.DistPath+"/"+file, "./temp/"+file); err != nil {
+					return nil, err
+				}
+			} else {
+				//先解压到临时目录
+				err = p7zip.Un7z(cfg.DistPath+"/"+file, "./temp/"+filename)
+				if err != nil {
+					return nil, err
+				}
+
+				//判断是不是要过滤的
+				for _, dflt := range cfg.DeleteFilter {
+					if strings.Contains(file, dflt.Index) {
+						//删掉List指定的文件/文件夹
+						for _, flt := range dflt.List {
+							err = os.Remove("./temp/" + filename + "/" + flt)
+							if err != nil {
+								return nil, err
+							}
+						}
+					}
+				}
+			}
+
+			//删除原文件
+			err = os.Remove("./" + cfg.DistPath + "/" + file)
+			if err != nil {
+				return nil, err
+			}
+
+			//重新打包，分卷19MB
+			if ok == 0 {
+				//对不支持的格式，需要替换变量名以适应下面的压缩操作
+				filename = file                      // xxx.exe
+				file = strings.TrimSuffix(file, ext) // xxx
+			}
+			file = filename + ".7z"
+			if err = p7zip.Do7z("./temp/"+filename, cfg.DistPath+"/"+file, cfg.CompRatio, true, "19m"); err != nil {
+				return nil, err
+			}
+
+			//检查分卷后的压缩包个数，只有一个则改名，去掉.001
+			sum := 0
+
+			for ok := true; ok == true; sum++ {
+				//补齐到三位数字
+				t := strconv.Itoa(sum + 1)
+				for i := 0; i < 3-len(t); i++ {
+					t = "0" + t
+				}
+
+				ok, err = util.IsFileExisted(cfg.DistPath + "/" + file + "." + t)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			if sum == 1 {
+				err = os.Rename(cfg.DistPath+"/"+file+".001", cfg.DistPath+"/"+file)
+				if err != nil {
+					return nil, err
+				}
+
+				split = append(split, file)
+			} else if sum > 1 {
+				//把分卷后的sum个地址添加到split
+				for i := 0; i < sum; i++ {
+					//补齐到三位数字
+					t := strconv.Itoa(sum + 1)
+					for i := 0; i < 3-len(t); i++ {
+						t = "0" + t
+					}
+
+					split = append(split, file+"."+t)
+				}
+			} else {
+				return nil, errors.New("unexpected error when split files: " + file)
+			}
+
+		} else {
+			split = append(split, file)
+		}
+	}
+
+	return split, nil
 }
 
 func UpdateVersionList(oldList []string, newVersion string) []string {

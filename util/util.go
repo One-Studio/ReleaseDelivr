@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"regexp"
 	"strconv"
@@ -185,6 +186,14 @@ func CompareVersion(v1 string, v2 string) (int8, error) {
 	} else {
 		return 0, nil
 	}
+}
+
+//执行一次command指令
+func Cmd(command string) (string, error) {
+	c := exec.Command("/bin/bash", "-c", command)
+	//cmd.Args = a
+	out, err := c.CombinedOutput()
+	return string(out), err
 }
 
 //实时获取cmd输出
