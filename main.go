@@ -117,6 +117,14 @@ func main() {
 		dApi.DownloadLink = release.File2Link(files, dCfg)
 	} else if res == 0 {
 		fmt.Println("当前版本即是最新版本，无需更新")
+		//保存version文件
+		if err = util.WriteFast("./version", target.TagName); err != nil {
+			log.Fatal(err)
+		}
+		//保存old_version文件
+		if err = util.WriteFast("./old_version", current.TagName); err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(0)
 	} else {
 		log.Fatal("出现错误，当前版本>最新版本")
@@ -148,7 +156,7 @@ func main() {
 		log.Fatal(err)
 	}
 	//保存version文件
-	if err = util.WriteFast("./version", dApi.Version); err != nil {
+	if err = util.WriteFast("./version", target.TagName); err != nil {
 		log.Fatal(err)
 	}
 	//保存old_version文件
