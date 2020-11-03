@@ -62,11 +62,13 @@ func main() {
 
 	//使用api读取当前仓库的版本号
 	if dCfg.ArchiverGH == true {
+		//!! Archiver仓库要先发布一个v0.0.0的release
 		current, err = release.ParseReleaseInfo(dCfg.ArchiverOwner, dCfg.ArchiverRepo)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
+		//!! archiverAPI要先备好一个v0.0.0版本信息
 		current.TagName, err = util.GetHttpData(dCfg.ArchiverAPI)
 		if err != nil {
 			log.Fatal(err)

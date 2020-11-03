@@ -1,3 +1,6 @@
+name: make dispatch on release
+# 放在目标仓库，发布更新时触发dispatch
+
 on:
     release:
       types: [published]
