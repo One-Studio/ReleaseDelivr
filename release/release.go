@@ -145,6 +145,32 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 					if strings.Contains(file, dflt.Index) {
 						//删掉List指定的文件/文件夹
 						for _, flt := range dflt.List {
+
+							//解决解压后的文件在 filename/另一文件夹名/... 的问题
+							if exist, err := util.IsFileExisted("./temp/" + filename + "/" + flt); err != nil {
+								return nil, err
+							} else if exist == false {
+								//出现问题，遍历解决
+								err := filepath.Walk("./temp",
+									func(path string, info os.FileInfo, err error) error {
+										if err != nil {
+											return err
+										}
+										if exist, err := util.IsFileExisted("./temp/" + filename + "/" + info.Name() + "/" + flt); err != nil {
+											return err
+										} else if exist == true {
+											if err := os.Rename("./temp/" + filename + "/" + info.Name(), "./temp/" + filename); err != nil {
+												return err
+											}
+										}
+
+										return nil
+									})
+								if err != nil {
+									return nil, err
+								}
+							}
+
 							err = os.Remove("./temp/" + filename + "/" + flt)
 							if err != nil {
 								return nil, err

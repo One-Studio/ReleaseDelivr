@@ -1,7 +1,7 @@
 # 排除的文件
 
 .DS_STORE
-.idea
+.idea/
 /dist/Linux64
 /dist/Win64
 /dist/Mac64
