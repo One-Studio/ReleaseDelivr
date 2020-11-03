@@ -86,6 +86,8 @@ func main() {
 			log.Fatal(err)
 		}
 
+		fmt.Println("dist目录已删除")
+
 		//更新设置信息和下载更新文件
 		var files []string
 		if dCfg.TargetGH == true {
@@ -128,10 +130,10 @@ func main() {
 	}
 	dCfg.Version = target.TagName
 	dCfg.VersionList = release.UpdateVersionList(dCfg.VersionList, target.TagName)
-	dCfg.Checktime = time.Now().Format("2006-01-02T15:04Z")
+	dCfg.CheckTime = time.Now().Format("2006-01-02T15:04Z")
 	dApi.Version = target.TagName
 	dApi.VersionList = release.UpdateVersionList(dApi.VersionList, target.TagName)
-	dApi.CheckTime = dCfg.Checktime
+	dApi.CheckTime = dCfg.CheckTime
 	dApi.Format = dCfg.Format
 
 	//字符串类型转time

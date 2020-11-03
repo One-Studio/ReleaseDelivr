@@ -3,6 +3,7 @@ package release
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/One-Studio/ReleaseDelivr/p7zip"
 	"os"
 	"path"
@@ -92,6 +93,8 @@ func checkDirSize(MB int64) error {
 				return err
 			}
 			filesize += info.Size()
+			fmt.Println(info.Name(), info.Size()/1024/1024)
+
 			return nil
 		})
 	if err != nil {
@@ -106,9 +109,9 @@ func checkDirSize(MB int64) error {
 //自动分割超过20MB的文件，可以根据DeleteFilter适当删除文件
 func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 	//先检查当前目录下所有文件大小之和是否小于50MB
-	if err := checkDirSize(50); err != nil {
-		return nil, err
-	}
+	//if err := checkDirSize(50); err != nil {
+	//	return nil, err
+	//}
 
 	//再检查所有files，如果有delete过滤的就删除对应文件，如果有超过20MB的就分卷压缩
 	var split []string
@@ -140,38 +143,51 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 					return nil, err
 				}
 
+				//return nil, nil
 				//判断是不是要过滤的
 				for _, dflt := range cfg.DeleteFilter {
 					if strings.Contains(file, dflt.Index) {
 						//删掉List指定的文件/文件夹
 						for _, flt := range dflt.List {
-
 							//解决解压后的文件在 filename/另一文件夹名/... 的问题
 							if exist, err := util.IsFileExisted("./temp/" + filename + "/" + flt); err != nil {
 								return nil, err
 							} else if exist == false {
 								//出现问题，遍历解决
+								subDir := ""
 								err := filepath.Walk("./temp",
 									func(path string, info os.FileInfo, err error) error {
 										if err != nil {
 											return err
-										}
-										if exist, err := util.IsFileExisted("./temp/" + filename + "/" + info.Name() + "/" + flt); err != nil {
+										} else if info.IsDir() == false {
+											return nil
+										} else if exist, err := util.IsFileExisted("./temp/" + filename + "/" + info.Name() + "/" + flt); err != nil {
 											return err
 										} else if exist == true {
-											if err := os.Rename("./temp/" + filename + "/" + info.Name(), "./temp/" + filename); err != nil {
-												return err
-											}
+											subDir = info.Name()
+											fmt.Println("SubDir = " + subDir)
 										}
 
 										return nil
 									})
 								if err != nil {
 									return nil, err
+								} else {
+									//找到了subDir，移动文件位置并删除该文件夹
+									if err := os.Rename("./temp/"+filename+"/"+subDir, "./temp/"+filename+"6657"); err != nil {
+										return nil, err
+									} else {
+										if err := os.RemoveAll("./temp/" + filename); err != nil {
+											return nil, err
+										}
+										if err := os.Rename("./temp/"+filename+"6657", "./temp/"+filename); err != nil {
+											return nil, err
+										}
+									}
 								}
 							}
 
-							err = os.Remove("./temp/" + filename + "/" + flt)
+							err = os.RemoveAll("./temp/" + filename + "/" + flt)
 							if err != nil {
 								return nil, err
 							}
@@ -197,16 +213,28 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 				return nil, err
 			}
 
+			//删除临时文件夹
+			err = os.RemoveAll("./temp")
+			if err != nil {
+				return nil, err
+			}
+
 			//检查分卷后的压缩包个数，只有一个则改名，去掉.001
 			sum := 0
 
 			for ok := true; ok == true; sum++ {
 				//补齐到三位数字
 				t := strconv.Itoa(sum + 1)
-				for i := 0; i < 3-len(t); i++ {
+				switch len(t) {
+				case 0:
+					t = "000"
+				case 1:
+					t = "00" + t
+				case 2:
 					t = "0" + t
 				}
 
+				fmt.Println(file + "." + t)
 				ok, err = util.IsFileExisted(cfg.DistPath + "/" + file + "." + t)
 				if err != nil {
 					return nil, err
@@ -224,8 +252,13 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 				//把分卷后的sum个地址添加到split
 				for i := 0; i < sum; i++ {
 					//补齐到三位数字
-					t := strconv.Itoa(sum + 1)
-					for i := 0; i < 3-len(t); i++ {
+					t := strconv.Itoa(i + 1)
+					switch len(t) {
+					case 0:
+						t = "000"
+					case 1:
+						t = "00" + t
+					case 2:
 						t = "0" + t
 					}
 
@@ -251,7 +284,7 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 //把文件名转换成最终加速下载的链接
 func File2Link(files []string, cfg config.Cfg) []string {
 	var links []string
-	if cfg.TargetGH == true {
+	if cfg.ArchiverGH == true {
 		prefix := "https://cdn.jsdelivr.net/gh/" + cfg.ArchiverOwner + "/" + cfg.ArchiverRepo + "/" + cfg.DistPath + "/"
 		for _, file := range files {
 			links = append(links, prefix+file)

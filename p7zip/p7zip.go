@@ -10,7 +10,6 @@ import (
 	"github.com/One-Studio/ReleaseDelivr/util"
 )
 
-//TODO: 根据设置删除解压后的部分文件
 const (
 	path string = "./7z"
 )
@@ -100,8 +99,8 @@ func Un7z(from7z string, to string) error {
 	var a []string
 	//设置7z位置
 	a = append(a, path)
-	//设置"解压"模式 x 在 xxx/文件名/ | e 在 xxx/
-	a = append(a, "e")
+	//设置"解压"模式 x 在 xxx/文件名/ | e 在 xxx/ !!!e慎用，所有子文件和文件夹都到一个目录了
+	a = append(a, "x")
 	//设置压缩包位置
 	a = append(a, strconv.Quote(from7z))
 	//设置文件位置

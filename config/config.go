@@ -25,7 +25,7 @@ type Cfg struct {
 	ArchiverVersion string    //归档工具的版本号
 	Version         string    //当前搬运的版本
 	VersionList     []string  //历史可用版本
-	Checktime       string    //最近一次检查的时间
+	CheckTime       string    //最近一次检查的时间
 	Format          int8      //压缩格式
 	CompRatio       int8      //压缩率
 	DistPath        string    //归档文件夹
@@ -43,10 +43,10 @@ var defCfg = Cfg{
 	ArchiverRepo:    "",
 	ArchiverGH:      true,
 	ArchiverAPI:     "",
-	ArchiverVersion: "v0.3.3",
+	ArchiverVersion: "v1.0.0",
 	Version:         "",
 	VersionList:     []string{},
-	Checktime:       "",
+	CheckTime:       "",
 	Format:          1,
 	CompRatio:       2,
 	DistPath:        "dist",
