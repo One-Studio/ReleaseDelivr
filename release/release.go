@@ -222,7 +222,7 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 			//检查分卷后的压缩包个数，只有一个则改名，去掉.001
 			sum := 0
 
-			for ok := true; ok == true; sum++ {
+			for {
 				//补齐到三位数字
 				t := strconv.Itoa(sum + 1)
 				switch len(t) {
@@ -235,9 +235,13 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 				}
 
 				fmt.Println(file + "." + t)
-				ok, err = util.IsFileExisted(cfg.DistPath + "/" + file + "." + t)
+				ok, err := util.IsFileExisted(cfg.DistPath + "/" + file + "." + t)
 				if err != nil {
 					return nil, err
+				} else if ok == true {
+					sum++
+				} else {
+					break
 				}
 			}
 

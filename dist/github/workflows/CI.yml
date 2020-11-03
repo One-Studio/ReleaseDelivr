@@ -26,14 +26,14 @@ jobs:
           ls
 
       # 读取最新版本号
-      - name: Read DownloadLink
+      - name: Read target version
         id: tVer
         uses: juliangruber/read-file-action@v1
         with:
           path: ./version
 
       # 读取旧版本号
-      - name: Read DownloadLink
+      - name: Read current version
         id: cVer
         uses: juliangruber/read-file-action@v1
         with:
