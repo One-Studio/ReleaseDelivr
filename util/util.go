@@ -189,31 +189,31 @@ func CompareVersion(v1 string, v2 string) (int8, error) {
 }
 
 //执行指令
-func Exec(command string, arg ...string) (string, error) {
-	c := exec.Command(command, arg...)
-	//cmd.Args = a
-	out, err := c.CombinedOutput()
-	return string(out), err
-}
+//func Exec(command string, arg ...string) (string, error) {
+//	c := exec.Command(command, arg...)
+//	//cmd.Args = a
+//	out, err := c.CombinedOutput()
+//	return string(out), err
+//}
 
 //更新环境变量里的版本号
-func UpdateVerInActions(tVer string, cVer string) error {
-	str := strconv.Quote("tVer="+tVer) + " >> $GITHUB_ENV"
-	_, err := Exec("echo", str)
-	if err != nil {
-		return err
-	}
-	//fmt.Println(out)
-
-	str = strconv.Quote("cVer="+cVer) + " >> $GITHUB_ENV"
-	_, err = Exec("echo", str)
-	if err != nil {
-		return err
-	}
-	//fmt.Println(out)
-
-	return nil
-}
+//func UpdateVerInActions(tVer string, cVer string) error {
+//	str := strconv.Quote("tVer="+tVer) + " >> $GITHUB_ENV"
+//	_, err := Exec("echo", str)
+//	if err != nil {
+//		return err
+//	}
+//	//fmt.Println(out)
+//
+//	str = strconv.Quote("cVer="+cVer) + " >> $GITHUB_ENV"
+//	_, err = Exec("echo", str)
+//	if err != nil {
+//		return err
+//	}
+//	//fmt.Println(out)
+//
+//	return nil
+//}
 
 //执行一次command指令
 func Cmd(command string) (string, error) {

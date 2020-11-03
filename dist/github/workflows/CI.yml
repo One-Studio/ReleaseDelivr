@@ -25,8 +25,22 @@ jobs:
           ./ReleaseDelivr
           ls
 
+      # 读取最新版本号
+      - name: Read DownloadLink
+        id: tVer
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./version
+
+      # 读取旧版本号
+      - name: Read DownloadLink
+        id: cVer
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./old_version
+
       - name: push
-        if: env.tVer != env.cVer
+        if: ${{ steps.cVer.outputs.content }} != ${{ steps.tVer.outputs.content }}
         uses: github-actions-x/commit@v2.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -40,22 +54,14 @@ jobs:
 
       # 等待10s 以防先发布再push
       - name: Sleep for 10 seconds
-        if: env.tVer != env.cVer
+        if: ${{ steps.cVer.outputs.content }} != ${{ steps.tVer.outputs.content }}
         uses: jakejarvis/wait-action@master
         with:
           time: '10s'
 
-      # 读取更新后的版本信息
-      - name: Read version
-        if: env.tVer != env.cVer
-        id: version
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: ./version
-
       # 读取下载地址
       - name: Read DownloadLink
-        if: env.tVer != env.cVer
+        if: ${{ steps.cVer.outputs.content }} != ${{ steps.tVer.outputs.content }}
         id: downloadlink
         uses: juliangruber/read-file-action@v1
         with:
@@ -63,10 +69,10 @@ jobs:
 
       # 运行工具
       - name: Github Release create, update, and upload assets
-        if: env.tVer != env.cVer
+        if: ${{ steps.cVer.outputs.content }} != ${{ steps.tVer.outputs.content }}
         uses: meeDamian/github-release@v2.0.3
         with:
           token:  ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.version.outputs.content }}
-          name: ${{ steps.version.outputs.content }}
+          tag: ${{ steps.tVer.outputs.content }}
+          name: ${{ steps.tVer.outputs.content }}
           body: 下载链接：</br>${{ steps.downloadlink.outputs.content }}

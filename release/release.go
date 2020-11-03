@@ -93,7 +93,7 @@ func checkDirSize(MB int64) error {
 				return err
 			}
 			filesize += info.Size()
-			fmt.Println(info.Name(), info.Size()/1024/1024)
+			//fmt.Println(info.Name(), info.Size()/1024/1024)
 
 			return nil
 		})
