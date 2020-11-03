@@ -43,7 +43,7 @@ var defCfg = Cfg{
 	ArchiverRepo:    "",
 	ArchiverGH:      true,
 	ArchiverAPI:     "",
-	ArchiverVersion: "v1.0.0",
+	ArchiverVersion: "v1.1.0",
 	Version:         "",
 	VersionList:     []string{},
 	CheckTime:       "",
@@ -51,9 +51,7 @@ var defCfg = Cfg{
 	CompRatio:       2,
 	DistPath:        "dist",
 	Filter:          []string{".zip", ".exe"},
-	DeleteFilter: []DFilter{
-		{"", []string{""}},
-	},
+	DeleteFilter:    []DFilter{},
 }
 
 //过滤一下设置文件的参数
