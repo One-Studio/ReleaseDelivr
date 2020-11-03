@@ -16,14 +16,11 @@ import (
 
 func main() {
 
-	//_,_ = release.AutoSplit([]string{}, dCfg.DistPath)
-	//return
-	//if err := p7zip.Do7z("ReleaseDelivr", "x.7z", 3, true, "1m"); err != nil {
-	//	log.Fatal(err)
-	//}
-	//if err := p7zip.Un7z("x.7z", "temp"); err != nil {
-	//	log.Fatal(err)
-	//}
+	//向Actions环境变量输出两个相同的版本号，以防出错时仍然发布release
+	err := util.UpdateVerInActions("v0", "v0")
+	if err != nil {
+		log.Fatal(err)
+	}
 	//读取程序设置
 
 	configPath, apiPath := "./config.json", "./api.json"
@@ -122,6 +119,11 @@ func main() {
 	}
 
 	//更新信息
+	//向Actions环境变量输出版本号
+	err = util.UpdateVerInActions(target.TagName, dCfg.Version)
+	if err != nil {
+		log.Fatal(err)
+	}
 	dCfg.Version = target.TagName
 	dCfg.VersionList = release.UpdateVersionList(dCfg.VersionList, target.TagName)
 	dCfg.Checktime = time.Now().Format("2006-01-02T15:04Z")
