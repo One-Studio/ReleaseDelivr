@@ -85,15 +85,15 @@ func DownloadAssets(assets []Asset, cfg config.Cfg) ([]string, error) {
 }
 
 //检查当前文件夹的大小是否小于 ~MB
-func checkDirSize(MB int64) error {
+func checkDirSize(dir string,MB int64) error {
 	var filesize int64
-	err := filepath.Walk(".",
+	err := filepath.Walk(dir,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 			filesize += info.Size()
-			//fmt.Println(info.Name(), info.Size()/1024/1024)
+			fmt.Println(info.Name(), info.Size()/1024/1024, "MB")
 
 			return nil
 		})
@@ -278,7 +278,7 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 	}
 
 	//再检查当前目录下所有文件大小之和是否小于50MB
-	if err := checkDirSize(50); err != nil {
+	if err := checkDirSize("./" + cfg.DistPath ,37); err != nil {
 		return nil, err
 	}
 
