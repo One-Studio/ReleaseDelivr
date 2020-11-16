@@ -2,7 +2,9 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -146,45 +148,79 @@ func DownloadFile(url string, location string) error {
 	}
 }
 
-//分割版本号 v1.2.3-stable -> ['1', '2', '3', '-stable'] v丢弃
-func SplitVersion(version string) []string {
-	r := regexp.MustCompile("^[a-zA-Z]?(\\d+)[.](\\d+)[.](\\d+)[\\s]*(\\S*)$")
-	verSlice := r.FindStringSubmatch(version)
-	//fmt.Println(r.MatchString(version), verSlice)
-	if len(verSlice) <= 0 {
-		return nil
+//分割版本号 v1.2.3-stable -> 'v', [1, 2, 3], '-stable'   prefix, version slice, suffix
+func SplitVersion(version string) (string, []int, string) {
+	//分离出prefix
+	r := regexp.MustCompile("^([a-zA-Z]?)(\\d+[\\s\\S]*)")
+	t := r.FindStringSubmatch(version)
+
+	//错误处理
+	if len(t) != 3 {
+		log.Println("版本分割出错，step1")
+		return "", nil, ""
 	}
-	return verSlice[1:]
+	prefix, version := t[1], t[2]
+
+	//循环分离出每个版本号，转换成int，赋给切片
+	var v []int
+	r = regexp.MustCompile("^(\\d+)\\.?([\\s\\S]*)")
+
+	for t = r.FindStringSubmatch(version); len(t) == 3; t = r.FindStringSubmatch(version){
+		//debug
+		fmt.Println(t)
+		i, err := strconv.Atoi(t[1])
+		if err != nil {
+			log.Println("版本分割出错，step2")
+			return "", nil, ""
+		}
+		v = append(v, i)
+		version = t[2]
+	}
+	//fmt.Println(r.MatchString(version), verSlice)
+
+	//处理suffix的左侧空格
+	suffix := strings.TrimSpace(version)
+
+	//debug
+	//fmt.Println("函数返回值", prefix, v, suffix)
+
+	return prefix, v, suffix
 }
 
 //对比版本号 返回int8 1->前者更大 -1->后者更大 0->相等 注意：stable等后缀只按串对比大小
-func CompareVersion(v1 string, v2 string) (int8, error) {
-	s1, s2, n := SplitVersion(v1), SplitVersion(v2), 0
+func CompareVersion(ver1 string, ver2 string) (int8, error) {
+	pre1, v1, suf1 := SplitVersion(ver1)
+	pre2, v2, suf2 := SplitVersion(ver2)
+	n := 0
 
 	//检测版本号是否出错
-	if s1 == nil || s2 == nil {
+	if v1 == nil || v2 == nil {
 		return 0, errors.New("version string is null or not matched")
 	}
-
+	//检测前缀
+	if strings.Compare(pre1, pre2) != 0 {
+		return 0, errors.New("prefix of 2 versions are different: " + pre1 + "!=" + pre2)
+	}
 	//先分割版本号，比较两者共同可比较的部分，然后选择分割切片长度更长的
-	if len(s1) < len(s2) {
-		n = len(s1)
+	if len(v1) < len(v2) {
+		n = len(v1)
 	} else {
-		n = len(s2)
+		n = len(v2)
 	}
 	for i := 0; i < n; i++ {
-		if t := strings.Compare(s1[i], s2[i]); t == 1 {
+		if v1[i] > v2[i] {
 			return 1, nil
-		} else if t == -1 {
+		} else if v1[i] > v2[i] {
 			return -1, nil
 		}
 	}
-	if len(s1) > len(s2) {
+	if len(v1) > len(v2) {
 		return 1, nil
-	} else if len(s1) < len(s2) {
+	} else if len(v1) < len(v2) {
 		return -1, nil
 	} else {
-		return 0, nil
+		//版本号长度一致，比较后缀
+		return int8(strings.Compare(suf1, suf2)), nil
 	}
 }
 
