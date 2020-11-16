@@ -147,10 +147,10 @@ func DownloadFile(url string, location string) error {
 }
 
 //分割版本号 v1.2.3-stable -> ['1', '2', '3', '-stable'] v丢弃
-func splitVersion(version string) []string {
+func SplitVersion(version string) []string {
 	r := regexp.MustCompile("^[a-zA-Z]?(\\d+)[.](\\d+)[.](\\d+)[\\s]*(\\S*)$")
 	verSlice := r.FindStringSubmatch(version)
-
+	//fmt.Println(r.MatchString(version), verSlice)
 	if len(verSlice) <= 0 {
 		return nil
 	}
@@ -159,7 +159,7 @@ func splitVersion(version string) []string {
 
 //对比版本号 返回int8 1->前者更大 -1->后者更大 0->相等 注意：stable等后缀只按串对比大小
 func CompareVersion(v1 string, v2 string) (int8, error) {
-	s1, s2, n := splitVersion(v1), splitVersion(v2), 0
+	s1, s2, n := SplitVersion(v1), SplitVersion(v2), 0
 
 	//检测版本号是否出错
 	if s1 == nil || s2 == nil {

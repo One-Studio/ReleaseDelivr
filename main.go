@@ -16,6 +16,14 @@ import (
 
 func main() {
 
+//util.SplitVersion("v1.2.3.4 beta")
+//util.SplitVersion("v1.2.3.4 beta")
+//util.SplitVersion("v1.2.3 stable")
+//util.SplitVersion("v1.2alpha")
+//util.SplitVersion("v1.2 space")
+//util.SplitVersion("v1.2.3.4alpha")
+//util.SplitVersion("v1 GM")
+//return
 	//向Actions环境变量输出两个相同的版本号，以防出错时仍然发布release
 	//err := util.UpdateVerInActions("v0", "v0")
 	//if err != nil {

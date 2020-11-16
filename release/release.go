@@ -278,9 +278,9 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 	}
 
 	//再检查当前目录下所有文件大小之和是否小于50MB
-	if err := checkDirSize("./" + cfg.DistPath ,37); err != nil {
-		return nil, err
-	}
+	//if err := checkDirSize("./" + cfg.DistPath ,37); err != nil {
+	//	return nil, err
+	//}
 
 	return split, nil
 }
@@ -289,7 +289,7 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 func File2Link(files []string, cfg config.Cfg) []string {
 	var links []string
 	if cfg.ArchiverGH == true {
-		prefix := "https://cdn.jsdelivr.net/gh/" + cfg.ArchiverOwner + "/" + cfg.ArchiverRepo + "/" + cfg.DistPath + "/"
+		prefix := "https://cdn.jsdelivr.net/gh/" + cfg.ArchiverOwner + "/" + cfg.ArchiverRepo + "@master/" + cfg.DistPath + "/"
 		for _, file := range files {
 			links = append(links, prefix+file)
 		}
