@@ -42,7 +42,7 @@ type Cfg struct {
 var defCfg = Cfg{
 	TargetOwner:     "",
 	TargetRepo:      "",
-	TargetGH:        true,
+	TargetGH:        false,
 	TargetAPI:       "",
 	TargetDLink:     "",
 	ArchiverOwner:   "",

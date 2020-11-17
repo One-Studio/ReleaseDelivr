@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/One-Studio/ReleaseDelivr/custom"
 	"log"
 	"os"
 	"path"
@@ -69,7 +70,7 @@ func main() {
 			log.Fatal(err)
 		}
 	} else {
-		target.TagName, err = util.GetHttpData(dCfg.TargetAPI)
+		target.TagName, dCfg.TargetDLink, err = custom.GetVersionAndLink(dCfg.TargetAPI)
 		if err != nil {
 			log.Fatal(err)
 		}
