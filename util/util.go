@@ -2,7 +2,6 @@ package util
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -167,7 +166,7 @@ func SplitVersion(version string) (string, []int, string) {
 
 	for t = r.FindStringSubmatch(version); len(t) == 3; t = r.FindStringSubmatch(version){
 		//debug
-		fmt.Println(t)
+		//fmt.Println(t)
 		i, err := strconv.Atoi(t[1])
 		if err != nil {
 			log.Println("版本分割出错，step2")

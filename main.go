@@ -129,6 +129,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		files, err = release.Rename(files, dCfg)
+		if err != nil {
+			log.Fatal(err)
+		}
 		dApi.DownloadLink = release.File2Link(files, dCfg)
 	} else if res == 0 {
 		fmt.Println("当前版本即是最新版本，无需更新")

@@ -12,6 +12,11 @@ type DFilter struct {
 	List  []string //要删除的文件列表
 }
 
+type RFilter struct {
+	Index string
+	Name string
+}
+
 type Cfg struct {
 	TargetOwner     string    //目标仓库主
 	TargetRepo      string    //目标仓库名
@@ -31,6 +36,7 @@ type Cfg struct {
 	DistPath        string    //归档文件夹
 	Filter          []string  //更新附件过滤字符串
 	DeleteFilter    []DFilter //Delete过滤，单个文件大于20MB时检查，删除部分文件 from DFilter.List
+	RenameFilter	[]RFilter //Rename过滤，文件名符合的改名
 }
 
 var defCfg = Cfg{
@@ -43,7 +49,7 @@ var defCfg = Cfg{
 	ArchiverRepo:    "",
 	ArchiverGH:      true,
 	ArchiverAPI:     "",
-	ArchiverVersion: "v1.1.2",
+	ArchiverVersion: "v1.2.0",
 	Version:         "",
 	VersionList:     []string{},
 	CheckTime:       "",
@@ -52,6 +58,7 @@ var defCfg = Cfg{
 	DistPath:        "dist",
 	Filter:          []string{".zip", ".exe"},
 	DeleteFilter:    []DFilter{},
+	RenameFilter:    []RFilter{},
 }
 
 //过滤一下设置文件的参数

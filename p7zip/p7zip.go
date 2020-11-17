@@ -14,7 +14,9 @@ const (
 	path string = "./7z"
 )
 
-var Support = [4]string{".7z", ".zip", ".gzip", ".tar"} //7z、ZIP、GZIP、BZIP2 和 TAR
+var Support = [5]string{".7z", ".zip", ".gzip", ".tar", "xz"} //7z、ZIP、GZIP、BZIP2 和 TAR
+
+//TODO: 支持tar.xz的解压 解压2次
 
 func check7z() bool {
 	if ok, err := util.IsFileExisted(path); err != nil {

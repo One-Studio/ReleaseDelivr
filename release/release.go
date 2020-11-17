@@ -4,15 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/One-Studio/ReleaseDelivr/config"
 	"github.com/One-Studio/ReleaseDelivr/p7zip"
+	"github.com/One-Studio/ReleaseDelivr/util"
 	"os"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/One-Studio/ReleaseDelivr/config"
-	"github.com/One-Studio/ReleaseDelivr/util"
 )
 
 type Asset struct {
@@ -283,6 +282,22 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 	//}
 
 	return split, nil
+}
+
+//自动改名文件，可用于去除文件名的版本号
+func Rename(files []string, cfg config.Cfg) ([]string, error) {
+	for _, file := range files {
+		for _, flt := range cfg.RenameFilter {
+			if strings.Contains(file, flt.Index) {
+				err := os.Rename("./" + cfg.DistPath + "/" + file, "./" + cfg.DistPath + "/" + flt.Name)
+				if err != nil {
+					return nil, err
+				}
+				file = flt.Name
+			}
+		}
+	}
+	return files, nil
 }
 
 //把文件名转换成最终加速下载的链接
