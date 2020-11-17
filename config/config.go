@@ -14,7 +14,7 @@ type DFilter struct {
 
 type RFilter struct {
 	Index string
-	Name string
+	Name  string
 }
 
 type Cfg struct {
@@ -36,7 +36,7 @@ type Cfg struct {
 	DistPath        string    //归档文件夹
 	Filter          []string  //更新附件过滤字符串
 	DeleteFilter    []DFilter //Delete过滤，单个文件大于20MB时检查，删除部分文件 from DFilter.List
-	RenameFilter	[]RFilter //Rename过滤，文件名符合的改名
+	RenameFilter    []RFilter //Rename过滤，文件名符合的改名
 }
 
 var defCfg = Cfg{

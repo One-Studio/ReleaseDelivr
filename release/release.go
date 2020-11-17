@@ -84,26 +84,26 @@ func DownloadAssets(assets []Asset, cfg config.Cfg) ([]string, error) {
 }
 
 //检查当前文件夹的大小是否小于 ~MB
-func checkDirSize(dir string,MB int64) error {
-	var filesize int64
-	err := filepath.Walk(dir,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			filesize += info.Size()
-			fmt.Println(info.Name(), info.Size()/1024/1024, "MB")
-
-			return nil
-		})
-	if err != nil {
-		return err
-	} else if filesize/1024/1024 >= MB {
-		return errors.New("total file size is above " + strconv.FormatInt(MB, 10) + "MB and JsDelivr won't work")
-	} else {
-		return nil
-	}
-}
+//func checkDirSize(dir string,MB int64) error {
+//	var filesize int64
+//	err := filepath.Walk(dir,
+//		func(path string, info os.FileInfo, err error) error {
+//			if err != nil {
+//				return err
+//			}
+//			filesize += info.Size()
+//			fmt.Println(info.Name(), info.Size()/1024/1024, "MB")
+//
+//			return nil
+//		})
+//	if err != nil {
+//		return err
+//	} else if filesize/1024/1024 >= MB {
+//		return errors.New("total file size is above " + strconv.FormatInt(MB, 10) + "MB and JsDelivr won't work")
+//	} else {
+//		return nil
+//	}
+//}
 
 //自动分割超过20MB的文件，可以根据DeleteFilter适当删除文件
 func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
@@ -130,19 +130,33 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 					break
 				}
 			}
-			//非7z支持的文件格式则对path做特殊处理，不解压
 			if ok == 0 {
+				//非7z支持的文件格式则对path做特殊处理，不解压
 				if err := os.Rename(cfg.DistPath+"/"+file, "./temp/"+file); err != nil {
 					return nil, err
 				}
 			} else {
 				//先解压到临时目录
-				err = p7zip.Un7z(cfg.DistPath+"/"+file, "./temp/"+filename)
-				if err != nil {
-					return nil, err
+				//针对.tar.xz进行处理 xxx.tar -> xxx
+				if strings.HasSuffix(filename, ".tar") {
+					err = p7zip.Un7z(cfg.DistPath+"/"+file, "./temp/")
+					if err != nil {
+						return nil, err
+					}
+
+					filename = strings.TrimSuffix(filename, ".tar")
+					err = p7zip.Un7z("./temp/" + filename + ".tar", "./temp/"+filename)
+					if err != nil {
+						return nil, err
+					}
+
+				} else {
+					err = p7zip.Un7z(cfg.DistPath+"/"+file, "./temp/"+filename)
+					if err != nil {
+						return nil, err
+					}
 				}
 
-				//return nil, nil
 				//判断是不是要过滤的
 				for _, dflt := range cfg.DeleteFilter {
 					if strings.Contains(file, dflt.Index) {
@@ -289,7 +303,7 @@ func Rename(files []string, cfg config.Cfg) ([]string, error) {
 	for _, file := range files {
 		for _, flt := range cfg.RenameFilter {
 			if strings.Contains(file, flt.Index) {
-				err := os.Rename("./" + cfg.DistPath + "/" + file, "./" + cfg.DistPath + "/" + flt.Name)
+				err := os.Rename("./"+cfg.DistPath+"/"+file, "./"+cfg.DistPath+"/"+flt.Name)
 				if err != nil {
 					return nil, err
 				}

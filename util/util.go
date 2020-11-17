@@ -164,7 +164,7 @@ func SplitVersion(version string) (string, []int, string) {
 	var v []int
 	r = regexp.MustCompile("^(\\d+)\\.?([\\s\\S]*)")
 
-	for t = r.FindStringSubmatch(version); len(t) == 3; t = r.FindStringSubmatch(version){
+	for t = r.FindStringSubmatch(version); len(t) == 3; t = r.FindStringSubmatch(version) {
 		//debug
 		//fmt.Println(t)
 		i, err := strconv.Atoi(t[1])
@@ -258,6 +258,12 @@ func Cmd(command string) (string, error) {
 	return string(out), err
 }
 
+//func Pause() {
+//	var a string
+//	fmt.Println("按键继续。。。")
+//	_,_ = fmt.Scanln(a)
+//	_,_ = fmt.Scanln(a)
+//}
 /* 获取指定路径下的所有文件，只搜索当前路径，不进入下一级目录，可匹配后缀过滤（suffix为空则不过滤）*/
 //func ListDir(dir, suffix string) (files []string, err error) {
 //	files = []string{}

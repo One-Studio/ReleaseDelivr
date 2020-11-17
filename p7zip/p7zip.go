@@ -14,7 +14,7 @@ const (
 	path string = "./7z"
 )
 
-var Support = [5]string{".7z", ".zip", ".gzip", ".tar", "xz"} //7z、ZIP、GZIP、BZIP2 和 TAR
+var Support = [5]string{".7z", ".zip", ".gzip", ".tar", ".xz"} //7z、ZIP、GZIP、BZIP2 和 TAR
 
 //TODO: 支持tar.xz的解压 解压2次
 
@@ -87,8 +87,15 @@ func Un7z(from7z string, to string) error {
 	if ok := check7z(); ok == false {
 		return errors.New("7z executable file is not existed")
 	}
-	//检查from7z是否以.7z结尾
-	if !strings.HasSuffix(from7z, ".7z") && !strings.HasSuffix(from7z, ".001") {
+	//检查from7z是不是支持的格式
+	support := false
+	for _, format := range Support {
+		if strings.HasSuffix(from7z, format) {
+			support = true
+			break
+		}
+	}
+	if support == false && !strings.HasSuffix(from7z, ".001") {
 		return errors.New("7z path/name is incorrect: " + from7z)
 	}
 	if ok, err := util.IsFileExisted(from7z + ".001"); err != nil {
@@ -97,21 +104,26 @@ func Un7z(from7z string, to string) error {
 		from7z += ".001"
 	}
 
-	//初始化
-	var a []string
-	//设置7z位置
-	a = append(a, path)
-	//设置"解压"模式 x 在 xxx/文件名/ | e 在 xxx/ !!!e慎用，所有子文件和文件夹都到一个目录了
-	a = append(a, "x")
-	//设置压缩包位置
-	a = append(a, strconv.Quote(from7z))
-	//设置文件位置
-	a = append(a, "-o"+strconv.Quote(to))
-	//出现问题先打印混合输出再返回error
-	str := strings.Join(a, " ")
-	out, err := util.Cmd(str)
+	//.tar.xz
+	out, err := callUn7z(path, "x", from7z, to)
 	if err != nil {
 		fmt.Println(out)
 	}
 	return err
+}
+
+func callUn7z(p7zip string, mode string, path1 string, path2 string) (string, error) {
+	//初始化
+	var a []string
+	//设置7z位置
+	a = append(a, p7zip)
+	//设置"解压"模式 x 在 xxx/文件名/ | e 在 xxx/ !!!e慎用，所有子文件和文件夹都到一个目录了
+	a = append(a, mode)
+	//设置压缩包位置
+	a = append(a, strconv.Quote(path1))
+	//设置文件位置
+	a = append(a, "-o"+strconv.Quote(path2))
+	//出现问题先打印混合输出再返回error
+	str := strings.Join(a, " ")
+	return util.Cmd(str)
 }
