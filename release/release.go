@@ -300,18 +300,27 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 
 //自动改名文件，可用于去除文件名的版本号
 func Rename(files []string, cfg config.Cfg) ([]string, error) {
+	var newFiles []string
+	var fail bool
 	for _, file := range files {
+		fail = true
 		for _, flt := range cfg.RenameFilter {
 			if strings.Contains(file, flt.Index) {
 				err := os.Rename("./"+cfg.DistPath+"/"+file, "./"+cfg.DistPath+"/"+flt.Name)
 				if err != nil {
 					return nil, err
 				}
-				file = flt.Name
+				newFiles = append(newFiles, flt.Name)
+				fail = false
+				break
 			}
 		}
+
+		if fail == true {
+			newFiles = append(newFiles, file)
+		}
 	}
-	return files, nil
+	return newFiles, nil
 }
 
 //把文件名转换成最终加速下载的链接
