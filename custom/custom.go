@@ -31,7 +31,8 @@ func GetVersionAndLink(api string) (string, string, error) {
 	}
 
 	//匹配正则表达式获得版本号
-	r := regexp.MustCompile("version: (//S+)")
+	//git     build: ffmpeg-git-(\\d+)-amd64-static.tar.xz
+	r := regexp.MustCompile("version: (\\S+)")
 	t := r.FindStringSubmatch(content)
 
 	if len(t) == 2 {
