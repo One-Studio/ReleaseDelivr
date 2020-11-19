@@ -31,11 +31,13 @@ func GetVersionAndLink(api string) (string, string, error) {
 	}
 
 	//匹配正则表达式获得版本号
-	r := regexp.MustCompile("build: ffmpeg-git-(\\d+)-amd64-static.tar.xz")
+	r := regexp.MustCompile("version: (//S+)")
 	t := r.FindStringSubmatch(content)
 
 	if len(t) == 2 {
-		return t[1], "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz", nil
+		//release  https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+		//git      https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
+		return t[1], "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz", nil
 	}
 
 	//修改：处理得到版本号和链接
