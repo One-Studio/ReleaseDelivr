@@ -96,11 +96,11 @@ func main() {
 	if res, err := util.CompareVersion(target.TagName, current.TagName); err != nil {
 		log.Fatal(err)
 	} else if res == 1 {
-		//删除dist目录下的所有文件
-		err = os.RemoveAll("./" + dCfg.DistPath)
-		if err != nil {
-			log.Fatal(err)
-		}
+		//删除dist目录下的所有文件 TODO
+		//err = os.RemoveAll("./" + dCfg.DistPath)
+		//if err != nil {
+		//	log.Fatal(err)
+		//}
 
 		fmt.Println("dist目录已删除")
 
@@ -116,11 +116,11 @@ func main() {
 			dApi.ReleaseTime = target.PublishAt
 			dApi.ReleaseNote = target.ReleaseNote
 		} else {
-			//对于非GitHub网站API，直接用DLink下载
-			err = util.DownloadFile(dCfg.TargetDLink, "./"+dCfg.DistPath)
-			if err != nil {
-				log.Fatal(err)
-			}
+			//对于非GitHub网站API，直接用DLink下载 TODO
+			//err = util.DownloadFile(dCfg.TargetDLink, "./"+dCfg.DistPath)
+			//if err != nil {
+			//	log.Fatal(err)
+			//}
 			//更新归档后的所有文件名
 			_, fileName := path.Split(dCfg.TargetDLink)
 			files = append(files, fileName)
