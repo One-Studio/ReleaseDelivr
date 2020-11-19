@@ -1,52 +1,43 @@
 package custom
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/One-Studio/ReleaseDelivr/util"
+	"log"
+	"os"
+	"regexp"
 )
 
-//利用 https://www.sojson.com/json/json2go.html
-//把对应json格式转换成golang的如下格式
-type Custom struct {
-	Name     string `json:"name"`
-	Type     string `json:"type"`
-	Version  string `json:"version"`
-	Size     int    `json:"size"`
-	Download struct {
-		SevenZ struct {
-			URL  string `json:"url"`
-			Size int    `json:"size"`
-			Sig  string `json:"sig"`
-		} `json:"7z"`
-		Zip struct {
-			URL  string `json:"url"`
-			Size int    `json:"size"`
-			Sig  string `json:"sig"`
-		} `json:"zip"`
-	} `json:"download"`
-}
-
-//利用获得上述json的链接，DIY获取版本号和下载链接 (version, link, err)
+//DIY获取版本号和下载链接 (version, link, err)
 func GetVersionAndLink(api string) (string, string, error) {
 	//固定：获取api的内容
+	count := 0
 	content, err := util.GetHttpData(api)
+	for ; err != nil && count < 2; count++ {
+		content, err = util.GetHttpData(api)
+	}
 	if err != nil {
-		return "", "", err
+		//官方api不稳定，很容易出错，出现问题直接退出放弃
+		//保存version文件
+		if err = util.WriteFast("./version", "fuck-U-API"); err != nil {
+			log.Fatal(err)
+		}
+		//保存old_version文件
+		if err = util.WriteFast("./old_version", "fuck-U-API"); err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0)
+		//return "", "", err
 	}
 
-	//固定：初始化实例并解析JSON
-	var CustomInst Custom
-	err = json.Unmarshal([]byte(content), &CustomInst) //第二个参数要地址传递
-	if err != nil {
-		return "", "", err
+	//匹配正则表达式获得版本号
+	r := regexp.MustCompile("build: ffmpeg-git-(\\d+)-amd64-static.tar.xz")
+	t := r.FindStringSubmatch(content)
+
+	if len(t) == 2 {
+		return t[1], "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz", nil
 	}
 
-	//固定：过滤失败的情况
-	if util.IsEmpty(CustomInst.Version) || util.IsEmpty(CustomInst.Download.SevenZ.URL) {
-		return "", "", errors.New("can't get version or download link")
-	} else {
-		//修改：处理得到版本号和链接
-		return CustomInst.Version, CustomInst.Download.SevenZ.URL, nil
-	}
+	//修改：处理得到版本号和链接
+	return "", "", errors.New("can't get version, data: " + content)
 }

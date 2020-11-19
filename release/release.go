@@ -138,24 +138,24 @@ func AutoSplit(files []string, cfg config.Cfg) ([]string, error) {
 			} else {
 				//先解压到临时目录
 				//针对.tar.xz进行处理 xxx.tar -> xxx
-				if strings.HasSuffix(filename, ".tar") {
-					err = p7zip.Un7z(cfg.DistPath+"/"+file, "./temp/")
+				if strings.HasSuffix(file, ".xz") {
+					//custom 解压.xz -> xxx.tar
+					out, err := util.Cmd("xz -d ./"+ cfg.DistPath + "/" +file)
 					if err != nil {
+						fmt.Println(out)
 						return nil, err
 					}
 
-					filename = strings.TrimSuffix(filename, ".tar")
-					err = p7zip.Un7z("./temp/" + filename + ".tar", "./temp/"+filename)
-					if err != nil {
-						return nil, err
-					}
-
-				} else {
-					err = p7zip.Un7z(cfg.DistPath+"/"+file, "./temp/"+filename)
-					if err != nil {
-						return nil, err
-					}
+					file = strings.TrimSuffix(file, ".xz")
+					ext = path.Ext(file)
+					filename = strings.TrimSuffix(file, ext)
 				}
+
+				err = p7zip.Un7z(cfg.DistPath+"/"+file, "./temp/"+filename)
+				if err != nil {
+						return nil, err
+					}
+
 
 				//判断是不是要过滤的
 				for _, dflt := range cfg.DeleteFilter {
