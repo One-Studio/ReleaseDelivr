@@ -49,7 +49,7 @@ var defCfg = Cfg{
 	ArchiverRepo:    "",
 	ArchiverGH:      true,
 	ArchiverAPI:     "",
-	ArchiverVersion: "v1.2.1",
+	ArchiverVersion: "v1.2.2",
 	Version:         "",
 	VersionList:     []string{},
 	CheckTime:       "",

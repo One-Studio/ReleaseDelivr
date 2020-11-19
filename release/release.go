@@ -63,9 +63,9 @@ func DownloadAssets(assets []Asset, cfg config.Cfg) ([]string, error) {
 	//必过滤"content_type": "application/octet-stream"
 	var files []string
 	for _, ast := range assets {
-		if ast.ContentType == "application/octet-stream" {
-			continue
-		}
+		//if ast.ContentType == "application/octet-stream" {
+		//	continue
+		//}
 		for _, flt := range cfg.Filter {
 			if strings.Contains(ast.Name, flt) {
 				err := util.DownloadFile(ast.BrowserDownloadURL, "./"+cfg.DistPath)
